@@ -95,7 +95,10 @@ runs:
         fi 
 
         patch -p1 -F3 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
-
+        if ! grep -q '#include <linux/susfs.h>' fs/namespace.c; then
+          echo "WARNING: SUSFS include missing from namespace.c, injecting manually"
+          sed -i '/^#include "internal.h"$/a #include <linux\/susfs.h>' fs/namespace.c
+        fi
         if [ "$FIX_NAMESPACE" = "1" ]; then
           sed -i '/^#include "internal.h"$/a #include <trace/hooks/blk.h>' fs/namespace.c
         fi
